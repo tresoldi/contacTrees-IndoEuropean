@@ -145,12 +145,23 @@ IE_CALIBRATIONS = [
 
 
 FBD_REPLACEMENTS = {
-        "TipDatesRandomWalker": "beast.evolution.operators.SampledNodeDateRandomWalker",
+    "TipDatesRandomWalker": "beast.evolution.operators.SampledNodeDateRandomWalker",
 }
 
 
-def calibration(run, prior, trait, all_languages, d, languages=None, glottolog_clade=None,
-                mean=0.0, name=None, replacements=None, monophyletic=False):
+def calibration(
+    run,
+    prior,
+    trait,
+    all_languages,
+    d,
+    languages=None,
+    glottolog_clade=None,
+    mean=0.0,
+    name=None,
+    replacements=None,
+    monophyletic=False,
+):
     if languages is None:
         languages = []
     if replacements is None:
@@ -162,14 +173,14 @@ def calibration(run, prior, trait, all_languages, d, languages=None, glottolog_c
         }
     if name is None:
         if glottolog_clade is None:
-            name = '_'.join(languages)
+            name = "_".join(languages)
         else:
             name = glottolog_clade
 
     if mean == 0.0:
         mean = d.get("mean", mean)
 
-    tag = d.pop('tag')
+    tag = d.pop("tag")
 
     if len(languages) == 0:
         return
@@ -200,7 +211,10 @@ def calibration(run, prior, trait, all_languages, d, languages=None, glottolog_c
                 run,
                 "operator",
                 id=f"TipDatesandomWalker:{language:}",
-                spec=replacements.get("TipDatesRandomWalker", "beast.evolution.operators.TipDatesRandomWalker"),
+                spec=replacements.get(
+                    "TipDatesRandomWalker",
+                    "beast.evolution.operators.TipDatesRandomWalker",
+                ),
                 windowSize="1",
                 tree="@tree",
                 weight="3.0",
@@ -230,9 +244,7 @@ def calibration(run, prior, trait, all_languages, d, languages=None, glottolog_c
             spec="beast.math.distributions.MRCAPrior",
             tree="@tree",
         )
-        taxonset = ET.SubElement(
-            mrcaprior, "taxonset", id=f"{name}", spec="TaxonSet"
-        )
+        taxonset = ET.SubElement(mrcaprior, "taxonset", id=f"{name}", spec="TaxonSet")
         plate = ET.SubElement(
             taxonset, "plate", range=",".join(sorted(languages)), var="language"
         )
@@ -254,12 +266,12 @@ def add_ie_calibrations(calibrations, first_writing):
         "--first-writing",
         "-w",
         type=float,
-        help="The date (BP) when writing started in the region, and thus a notable chance of lanugages of languages being sampled begins. (Default: Don't modify this parameter in the template.)"
+        help="The date (BP) when writing started in the region, and thus a notable chance of lanugages of languages being sampled begins. (Default: Don't modify this parameter in the template.)",
     )
     parser.add_argument(
         "--subset",
-        type=argparse.FileType('r'),
-        help="A file (or '-' for stdin) containing one language to be included per line"
+        type=argparse.FileType("r"),
+        help="A file (or '-' for stdin) containing one language to be included per line",
     )
     parser.add_argument(
         "--output-file",
@@ -272,7 +284,7 @@ def add_ie_calibrations(calibrations, first_writing):
         "-s",
         action="store_true",
         default=False,
-        help="Work for a sampled ancestor tree, which needs variant operators."
+        help="Work for a sampled ancestor tree, which needs variant operators.",
     )
     parser.add_argument(
         "--metadata",
@@ -348,10 +360,19 @@ def add_ie_calibrations(calibrations, first_writing):
         print(lang)
 
     for c in calibrations:
-        calibration(run, prior, trait, languages, replacements=FBD_REPLACEMENTS if args.sampled_ancestors else {}, **c)
+        calibration(
+            run,
+            prior,
+            trait,
+            languages,
+            replacements=FBD_REPLACEMENTS if args.sampled_ancestors else {},
+            **c,
+        )
 
     if args.first_writing is not None:
-        run = [tag for tag in root.iter() if tag.attrib.get("id") == "SamplingChangeTime"][0]
+        run = [
+            tag for tag in root.iter() if tag.attrib.get("id") == "SamplingChangeTime"
+        ][0]
         run.text = f"0. {args.first_writing:f}"
 
     et.write(args.output_file, encoding="unicode")

@@ -21,12 +21,14 @@ class ContactEdge(object):
 
     """
 
-    def __init__(self,
-                 donor_clade: str = None,
-                 receiver_clade: str = None,
-                 height: float = None,
-                 affected_blocks: List[str] = None,
-                 block_posterior: Dict[str, float] = None):
+    def __init__(
+        self,
+        donor_clade: str = None,
+        receiver_clade: str = None,
+        height: float = None,
+        affected_blocks: List[str] = None,
+        block_posterior: Dict[str, float] = None,
+    ):
         self.donor_clade = donor_clade
         self.receiver_clade = receiver_clade
         self.height = height
@@ -37,7 +39,7 @@ class ContactEdge(object):
         self.receiver_node = None
 
     def __repr__(self):
-        return f'ContactEdge({self.donor_clade}->{self.receiver_clade}:{self.height})'
+        return f"ContactEdge({self.donor_clade}->{self.receiver_clade}:{self.height})"
 
 
 def get_root(node: Node) -> Node:
@@ -48,14 +50,14 @@ def get_root(node: Node) -> Node:
 
 
 def get_sibling(node: Node) -> Optional[Node]:
-        if node.ancestor is None or len(node.ancestor.descendants) != 2:
-            return None
+    if node.ancestor is None or len(node.ancestor.descendants) != 2:
+        return None
 
-        me_and_my_sibling = node.ancestor.descendants
-        if node is me_and_my_sibling[0]:
-            return me_and_my_sibling[1]
-        else:
-            return me_and_my_sibling[0]
+    me_and_my_sibling = node.ancestor.descendants
+    if node is me_and_my_sibling[0]:
+        return me_and_my_sibling[1]
+    else:
+        return me_and_my_sibling[0]
 
 
 def get_depth(node: Node) -> float:
@@ -88,10 +90,10 @@ def get_age(node: Union[ContactEdge, Node]) -> float:
 def get_node_by_name(tree: Node, name: str, ignore_duplicates: bool = False) -> Node:
     matches = get_all_nodes_named(tree, name)
 
-    assert len(matches) >= 1, f'No node named `{name}` found in tree.'
+    assert len(matches) >= 1, f"No node named `{name}` found in tree."
 
     if not ignore_duplicates:
-        assert len(matches) == 1, f'Multiple nodes named `{name}` found in tree.'
+        assert len(matches) == 1, f"Multiple nodes named `{name}` found in tree."
 
     return matches[0]
 
@@ -104,40 +106,44 @@ def get_all_nodes_named(tree: Node, name: str):
 
     return matches
 
+
 def parse_node_comment(comment: str) -> dict:
     # Drop the leading `&`
-    assert comment.startswith('&')
+    assert comment.startswith("&")
     comment = comment[1:]
 
     # Read the attributes as a dict (using pythons dict() notation)
-    attrs = eval(f'dict({comment})')
+    attrs = eval(f"dict({comment})")
 
     # Manually parse the `affectedBlocks` string
-    attrs['affectedBlocks'] = set(attrs['affectedBlocks'][1:-1].split(','))
+    attrs["affectedBlocks"] = set(attrs["affectedBlocks"][1:-1].split(","))
 
-    if 'blockPosterior' in attrs:
-        block_post_reformated = attrs['blockPosterior'].replace(':', '\':')\
-                                                       .replace(',', ',\'')\
-                                                       .replace('{', '{\'')
-        attrs['blockPosterior'] = eval(block_post_reformated)
+    if "blockPosterior" in attrs:
+        block_post_reformated = (
+            attrs["blockPosterior"]
+            .replace(":", "':")
+            .replace(",", ",'")
+            .replace("{", "{'")
+        )
+        attrs["blockPosterior"] = eval(block_post_reformated)
     else:
-        attrs['blockPosterior'] = {b: 1. for b in attrs['affectedBlocks']}
+        attrs["blockPosterior"] = {b: 1.0 for b in attrs["affectedBlocks"]}
 
     return attrs
 
 
 def get_actual_leaves(node: Node) -> List[Node]:
-    return [n for n in node.get_leaves() if not n.name.startswith('#')]
+    return [n for n in node.get_leaves() if not n.name.startswith("#")]
 
 
 def collect_contactedges(tree: Node, block_posterior_threshold: float = 0.5) -> List:
     contactedges = {}
 
-    leaves = sorted(get_actual_leaves(tree), key=attrgetter('name'))
+    leaves = sorted(get_actual_leaves(tree), key=attrgetter("name"))
 
     def compress_clade(node):
         clade = get_actual_leaves(node)
-        return ''.join([str(int(l in clade)) for l in leaves])
+        return "".join([str(int(l in clade)) for l in leaves])
 
     done = set()
 
@@ -147,7 +153,7 @@ def collect_contactedges(tree: Node, block_posterior_threshold: float = 0.5) -> 
             continue
 
         # if node.name and node.name.startswith('#'):
-        if node.name.startswith('#'):
+        if node.name.startswith("#"):
             if node.name not in contactedges:
                 contactedges[node.name] = ContactEdge()
             cedge = contactedges[node.name]
@@ -164,10 +170,14 @@ def collect_contactedges(tree: Node, block_posterior_threshold: float = 0.5) -> 
                 node_attrs = parse_node_comment(node.comment)
                 cedge.height = get_age(node)
                 cedge.affected_blocks = [
-                    b for b in node_attrs['affectedBlocks']
-                    if node_attrs['blockPosterior'][b] > block_posterior_threshold
+                    b
+                    for b in node_attrs["affectedBlocks"]
+                    if node_attrs["blockPosterior"][b] > block_posterior_threshold
                 ]
-                cedge.block_posterior = {b: node_attrs['blockPosterior'][b] for b in node_attrs['affectedBlocks']}
+                cedge.block_posterior = {
+                    b: node_attrs["blockPosterior"][b]
+                    for b in node_attrs["affectedBlocks"]
+                }
 
             cedge_hash = (cedge.donor_clade, cedge.receiver_clade)
             if None not in cedge_hash:
@@ -177,12 +187,11 @@ def collect_contactedges(tree: Node, block_posterior_threshold: float = 0.5) -> 
                 else:
                     done.add(cedge_hash)
 
-
     return list(contactedges.values())
 
 
 def drop_contactedges(tree: Node):
-    fake_tips = [n for n in tree.get_leaves() if n.name.startswith('#')]
+    fake_tips = [n for n in tree.get_leaves() if n.name.startswith("#")]
     tree.prune(fake_tips)
     tree.remove_redundant_nodes()
 
@@ -190,6 +199,7 @@ def drop_contactedges(tree: Node):
 def translate_node_names(tree: Node, translate: dict):
     def rename_node(node: Node):
         node.name = translate.get(node.name, node.name)
+
     tree.visit(rename_node)
 
 

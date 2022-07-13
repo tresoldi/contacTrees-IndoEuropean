@@ -21,56 +21,83 @@ from contacTreesIE.preprocessing import xml_snippets
 from contacTreesIE.preprocessing.xml_snippets import Samplers
 from contacTreesIE.preprocessing.starting_trees import CHANG_MEDIUM_TREE
 from contacTreesIE.preprocessing.starting_trees import CHANG_MEDIUM_TRANSLATE
+from contacTreesIE.preprocessing.starting_trees import (
+    GERARDI_TUPI_TREE,
+    GERARDI_TRANSLATE,
+)
 
 XML_TEMPLATE_PATH = "resources/ie_template.xml"
 LOANS_CSV_PATH = "loans.csv"
 ZOMBIE_LATIN = "Latin_preserved"
 MEDIEVAL_LATIN = "Latin_M"
 
-DATASET = CHANG_MEDIUM
+
+tg_langs = [
+    "Ache",
+    "Amondawa",
+    "Anambe",
+    "Apiaka",
+    "Arawete",
+    "Asurini_Tocantins",
+    "Asurini_Xingu",
+    "Ava_Canoeiro",
+    "Aweti",
+    "Chiriguano",
+    "Guajajara",
+    "Guaja",
+    "Guarani",
+    "Guarayo",
+    "Kaapor",
+    "Kaiowa",
+    "Kamajura",
+    "Kayabi",
+    "Kokama",
+    "Mawe",
+    "Mbya",
+    "Nheengatu",
+    "Old_Guarani",
+    "Omagua",
+    "Parakana",
+    "Parintintin",
+    "Siriono",
+    "Surui_Aikewara",
+    "Tapiete",
+    "Tapirape",
+    "Teko",
+    "Tembe",
+    "Tenharim",
+    "Tupinamba",
+    "Urueuwauwau",
+    "Warazu",
+    "Wayampi",
+    "Xeta",
+    "Yuki",
+    "Zoe",
+]
+
+
+# DATASET = CHANG_MEDIUM
 # DATASET = TINY_SET
-INCLUDED_CLADES = CELTIC + GERMANIC + ROMANCE
-INCLUDED_LANGUAGES = [l for l in DATASET if l in INCLUDED_CLADES] + [MEDIEVAL_LATIN]
-RENAME = RENAME_CHANG
-translate = CHANG_MEDIUM_TRANSLATE
-STARTING_TREE = CHANG_MEDIUM_TREE
+# INCLUDED_CLADES = CELTIC + GERMANIC + ROMANCE
+INCLUDED_LANGUAGES = tg_langs
+RENAME = RENAME_GERARDI
+translate = GERARDI_TRANSLATE
+STARTING_TREE = GERARDI_TUPI_TREE
 
 SA_PRIOR_SIGMA = 100.0
 
 TIP_DATES = defaultdict(float)
 TIP_DATES.update(
     {
-        "Old_Irish": 1250.0,
-        "Cornish": 300.0,
-        "Umbrian": 2200.0,
-        "Oscan": 2200.0,
-        "Latin": 2050.0,
-        MEDIEVAL_LATIN: 1000.0,
-        "Gothic": 1650.0,
-        "Old_Norse": 775.0,
-        "Old_High_German": 1050.0,
-        "Old_English": 1000.0,
-        "Old_Prussian": 500.0,
-        "Old_Church_Slavonic": 1000.0,
-        "Ancient_Greek": 2400.0,
-        "Classical_Armenian": 1450.0,
-        "Avestan": 2500.0,
-        "Old_Persian": 2450.0,
-        "Vedic_Sanskrit": 3000.0,
-        "Tocharian_A": 1375.0,
-        "Tocharian_B": 1350.0,
-        "Hittite": 3450.0,
-        "Luvian": 3350.0,
-        "Lycian": 2400.0,
+        "Old_Guarani": 325.0,
+        "Tupinamba": 400.0,
+        "Guarayo": 75.0,
+        "Xeta": 50.0,
     }
 )
 
 SAMPLED_ANCESTORS = [
-    "Latin",
-    "Old_Irish",
-    "Old_High_German",
-    "Old_English",
-    "Old_Norse",
+    # "Tupinambá",
 ]
 
 
@@ -128,225 +155,99 @@ class Clade(object):
         )
 
 
-post_OI = Clade(
-    name="Post_OI",
-    members=["Irish_B", "Scots_Gaelic"],
-    age_prior={
-        CalibrationModes.CHANG: '<distr id="Post_OI.tmrca" spec="beast.math.distributions.Uniform" lower="1050" upper="10000"/>',
-        CalibrationModes.BOUCKAERT: "",
-    },
-)
-old_irish_irish_scots = Clade(
-    name="Old_Irish_Irish_Scots",
-    members=["Old_Irish", post_OI],
-    age_prior=f'<distr id="OldIrish_SA.tmrca" spec="Normal" offset="1250" sigma="{SA_PRIOR_SIGMA}"/>',
-)
-brythonic = Clade(
-    name="Brythonic",
-    members=["Welsh_N", "Breton_ST", "Cornish"],
-    age_prior={
-        CalibrationModes.CHANG: '<distr id="Brythonic.tmrca" spec="beast.math.distributions.Uniform" lower="1250" upper="10000"/>',
-        CalibrationModes.BOUCKAERT: '<distr id="Brythonic.tmrca" spec="Normal" mean="1550" sigma="100"/>',
-    },
-)
-celtic = Clade(
-    name="Celtic",
-    members=[old_irish_irish_scots, brythonic],
-    age_prior={
-        CalibrationModes.CHANG: "",
-        CalibrationModes.BOUCKAERT: '<distr id="Celtic.tmrca" spec="beast.math.distributions.Uniform" lower="1700" upper="10000.0"/>',
-    },
-)
-french_iberian = Clade(
-    name="FrenchIberian",
-    members=["Provencal", "French", "Walloon", "Spanish", "Portuguese_ST", "Catalan"],
-    age_prior={
-        CalibrationModes.CHANG: "",
-        CalibrationModes.BOUCKAERT: '<distr id="FrenchIberian.tmrca" spec="Normal" mean="1400" sigma="100"/>',
-    },
+AwetiTG = Clade(
+    name="AwetiTG",
+    members=[l for l in tg_langs if l != "Mawe"],
 )
 
-post_latin = Clade(
-    name="Post_Latin",
+TG = Clade(
+    name="TG",
+    members=[l for l in tg_langs if l not in ["Mawe", "Aweti"]],
+)
+
+GTG = Clade(
+    name="GTG",
+    members=["Guaja", "Guajajara", "Tembe"],
+)
+
+Guaranian = Clade(
+    name="Guaranian",
     members=[
-        french_iberian,
-        "Sardinian_N",
-        "Sardinian_C",
-        "Rumanian_List",
-        "Vlach",
-        "Italian",
-        "Ladin",
-        "Friulian",
-        "Romansh",
+        "Ache",
+        "Chiriguano",
+        "Guarani",
+        "Guarayo",
+        "Kaiowa",
+        "Mbya",
+        "Old_Guarani",
+        "Siriono",
+        "Tapiete",
+        "Warazu",
+        "Xeta",
+        "Yuki",
     ],
 )
 
-latin_romance = Clade(
-    name="Latin_Romance",
-    members=["Latin", post_latin],
-    age_prior={
-        CalibrationModes.CHANG: '<distr id="Latin_Romance.tmrca" spec="beast.math.distributions.Uniform" lower="1750" upper="10000"/>',
-        CalibrationModes.BOUCKAERT: '<distr id="Latin_Romance.tmrca" spec="Normal" mean="2050" sigma="150"/>',
-    },
+Kawahiva = Clade(
+    name="Kawahiva",
+    members=["Amondawa", "Apiaka", "Kayabi", "Parintintin", "Tenharim", "Urueuwauwau"],
 )
-"""COMMENT: For the tMRCA of Romance the lower bound is given by the sample date of Latin.
-We add an informative prior as an upper bound to ensure that the branch above latin is not
- too long (we know it was at least close to a sampled ancestor of romance languages)."""
 
-# italic = Clade(
-#     name='Italic',
-#     members=['Umbrian', 'Oscan', latin_romance]
-# )
-post_ON = Clade(name="Post_ON", members=["Icelandic_ST", "Faroese", "Norwegian"])
-old_norse_icelandic_faroese = Clade(
-    name="Old_Norse_Icelandic_Faroese",
-    members=["Old_Norse", post_ON],
-    age_prior=f'<distr id="OldNorse_SA.tmrca" spec="Normal" offset="775" sigma="{SA_PRIOR_SIGMA}"/>',
+OK = Clade(
+    name="OK",
+    members=["Omagua", "Kokama"],
 )
-north_germanic = Clade(
-    name="NorthGermanic",
-    members=[
-        "Swedish_Up",
-        "Swedish_Vl",
-        "Swedish",
-        "Danish",
-        old_norse_icelandic_faroese,
-    ],
-    age_prior={
-        CalibrationModes.CHANG: '<distr id="NorthGermanic.tmrca" spec="beast.math.distributions.Uniform" lower="1500" upper="10000"/>',
-        CalibrationModes.BOUCKAERT: "",
-    },
+
+Tupi = Clade(
+    name="Tupi",
+    members=["Omagua", "Kokama", "Nheengatu", "Tupinamba"],
 )
-post_OHG = Clade(name="Post_OHG", members=["German", "Luxembourgish", "Schwyzerdutsch"])
-high_german = Clade(
-    name="High_German",
-    members=["Old_High_German", post_OHG],
-    age_prior=f'<distr id="High_German_SA.tmrca" spec="Normal" mean="1050" sigma="{SA_PRIOR_SIGMA}"/>',
+
+ZWT = Clade(
+    name="ZWT",
+    members=["Teko", "Wayampi", "Zoe"],
 )
-english_clade = Clade(
-    name="English_Clade",
-    members=["Old_English", "English"],
-    age_prior=f'<distr id="English_SA.tmrca" spec="Normal" mean="1000" sigma="{SA_PRIOR_SIGMA}"/>',
-)
-west_germanic = Clade(
-    name="WestGermanic",
-    members=[
-        "Dutch_List",
-        "Flemish",
-        "Frisian",
-        "Afrikaans",
-        english_clade,
-        high_german,
-    ],
-    age_prior={
-        CalibrationModes.CHANG: "",
-        CalibrationModes.BOUCKAERT: '<distr id="WestGermanic.tmrca" spec="Normal" mean="1550" sigma="100"/>',
-    },
-)
-north_west_germanic = Clade(
-    name="NorthWestGermanic",
-    members=[north_germanic, west_germanic],
-    age_prior={
-        CalibrationModes.CHANG: "",
-        CalibrationModes.BOUCKAERT: '<distr id="NorthWestGermanic.tmrca" spec="Normal" mean="1875" sigma="150"/>',
-    },
-)
-germanic = Clade(
-    name="Germanic",
-    members=["Gothic", north_west_germanic],
-    age_prior={
-        CalibrationModes.CHANG: '<distr id="Germanic.tmrca" spec="beast.math.distributions.Uniform" lower="2250" upper="10000"/>',
-        CalibrationModes.BOUCKAERT: "",
-    },
-)
-# lithuanian_latvian = Clade(
-#     name='LithuanianLatvian',
-#     members=['Lithuanian_ST', 'Latvian'],
-#     age_prior='<distr id="LithuanianLatvian.tmrca" spec="Normal" mean="1350" sigma="30"/>'
-# )
-# baltic = Clade(
-#     name='Baltic',
-#     members=['Old_Prussian', 'Lithuanian_ST', 'Latvian']
-# )
-# south_slavic = Clade(
-#     name='South_Slavic',
-#     members=['Macedonian', 'Bulgarian', 'Serbocroatian', 'Old_Church_Slavonic']
-# )
-# slavic = Clade(
-#     name='Slavic',
-#     members=['Slovenian', 'Lower_Sorbian', 'Upper_Sorbian', 'Czech', 'Slovak', 'Czech_E', 'Ukrainian', 'Byelorussian', 'Polish', 'Russian', 'Macedonian', 'Bulgarian', 'Serbocroatian', 'Old_Church_Slavonic'],
-#     age_prior='<distr id="Slavic.tmrca" spec="LogNormalDistributionModel" offset="1200.0" M="300" S="0.6" meanInRealSpace="true"/>'
-# )
-# balto_slavic = Clade(
-#     name='Balto-Slavic',
-#     members=['Old_Prussian', 'Lithuanian_ST', 'Latvian', 'Slovenian', 'Lower_Sorbian', 'Upper_Sorbian', 'Czech', 'Slovak', 'Czech_E', 'Ukrainian', 'Byelorussian', 'Polish', 'Russian', 'Macedonian', 'Bulgarian', 'Serbocroatian', 'Old_Church_Slavonic'],
-#     age_prior='<distr id="Balto-Slavic.tmrca" spec="beast.math.distributions.Uniform" lower="2200" upper="3400"/>'
-# )
-# modern_greek = Clade(
-#     name='Modern_Greek',
-#     members=['Greek_Mod', 'Greek_Ml']
-# )
-# greek = Clade(
-#     name='Greek',
-#     members=['Ancient_Greek', 'Greek_Mod', 'Greek_Ml']
-# )
-# eastern_iranian = Clade(
-#     name='Eastern_Iranian',
-#     members=['Wakhi', 'Avestan', 'Digor_Ossetic', 'Iron_Ossetic']
-# )
-# albanian = Clade(
-#     name='Albanian',
-#     members=['Albanian_Top', 'Albanian_G', 'Albanian_K', 'Albanian_C']
-# )
+
 
 CLADES = [
-    post_OI,
-    old_irish_irish_scots,
-    brythonic,
-    celtic,
-    french_iberian,
-    post_latin,
-    latin_romance,
-    # italic,
-    post_ON,
-    old_norse_icelandic_faroese,
-    north_germanic,
-    post_OHG,
-    high_german,
-    english_clade,
-    west_germanic,
-    north_west_germanic,
-    germanic,
+    AwetiTG,
+    TG,
+    GTG,
+    Guaranian,
+    Kawahiva,
+    OK,
+    Tupi,
+    ZWT,
 ]
 
 
 def read_dataset(csv_path):
     """Read the cognate data-set from a TSV file and run some basic parsing."""
-    ielex = pd.read_csv(csv_path, sep="\t", dtype=str)
-    try:
-        ielex["concept"] = ielex["cc_alias"].map(lambda s: s.split("-")[0].strip())
-    except AttributeError as e:
-        for cc_alias in ielex.cc_alias:
-            if not isinstance(cc_alias, str) or ("-" not in cc_alias):
-                print("Invalid cc_alias:", cc_alias)
-        raise e
+    tg = pd.read_csv(csv_path, sep="\t", dtype=str)
+    # try:
+    #    tg["CONCEPT"] = tg["COGID"].map(lambda s: s.split("-")[0].strip())
+    # except AttributeError as e:
+    #    for cogid in tg.COGID:
+    #        if not isinstance(cogid, str) or ("-" not in cogid):
+    #            print("Invalid cogid:", cogid)
+    #    raise e
 
-    return ielex
+    return tg
 
 
 def drop_noncoded(ielex):
     """Drop rows which do not have a cognate ID."""
-    return ielex.loc[~pd.isna(ielex.cc_id)]
+    return ielex.loc[~pd.isna(ielex.COGID)]
 
 
 def parse_loanwords(ielex: pd.DataFrame):
     loans = pd.DataFrame(
-        data=0, dtype=int, columns=ielex.language.unique(), index=ielex.concept.unique()
+        data=0, dtype=int, columns=ielex.DOCULECT.unique(), index=ielex.CONCEPT.unique()
     )
 
-    for concept, concepts_grouped in ielex.groupby("concept"):
-        concepts_grouped.set_index("language")
-        for i_cc, (_, cc_grouped) in enumerate(concepts_grouped.groupby("cc_id")):
+    for concept, concepts_grouped in ielex.groupby("CONCEPT"):
+        concepts_grouped.set_index("DOCULECT")
+        for i_cc, (_, cc_grouped) in enumerate(concepts_grouped.groupby("COGID")):
             for _, row in cc_grouped.iterrows():
                 if row.status in ("LOAN",):
                     loans.loc[concept, row.language] = 1
@@ -365,30 +266,29 @@ def parse_data_matrix(ielex: pd.DataFrame, exclude_loans=False):
         dict: The parsed data set which is nested dictionary:
                 {language (str) ->  {concept (str) -> data (string of 0/1/?)}}
     """
-    languages = ielex.language.unique()
+    languages = ielex.DOCULECT.unique()
 
     # ´data´ is a nested dict:
     # {language: {concept: "absence/presence of each cognate for this concept as a binary string"}}
     data = {lang: {} for lang in languages}
 
-    for concept, concepts_grouped in ielex.groupby("concept"):
-        concepts_grouped.set_index("language")
-        n_cc = len(concepts_grouped.cc_id.unique())
+    for concept, concepts_grouped in ielex.groupby("CONCEPT"):
+        concepts_grouped.set_index("DOCULECT")
+        n_cc = len(concepts_grouped.COGID.unique())
         concept_data = defaultdict(list)
 
         # Collect all cognates for the current concept
-        for i_cc, (_, cc_grouped) in enumerate(concepts_grouped.groupby("cc_id")):
+        for i_cc, (_, cc_grouped) in enumerate(concepts_grouped.groupby("COGID")):
             for _, row in cc_grouped.iterrows():
-                if row.status in ("EXCLUDE", "LOAN,EXCLUDE", "WRONG"):
-                    continue
-                elif row.status == "LOAN":
-                    if exclude_loans:
-                        continue
-                elif not pd.isna(row.status):
-                    raise ValueError(
-                        f'Unknown status "{row.status}" in {row.language}:{row.cc_alias}'
-                    )
-                concept_data[row.language].append(i_cc)
+                # if row.status in ("EXCLUDE", "LOAN,EXCLUDE", "WRONG"):
+                #    continue
+                # elif exclude_loans and row.status == "LOAN":
+                #    continue
+                # elif not pd.isna(row.status):
+                #    raise ValueError(
+                #        f'Unknown status "{row.status}" in {row.language}:{row.cc_alias}'
+                #    )
+                concept_data[row.DOCULECT].append(i_cc)
 
         # Assemble cognate absence/presence for the current concept and each language in a binary string
         for lang in languages:
@@ -417,8 +317,8 @@ def compile_ielex_xml(
     use_contactrees=True,
     expected_conversions=0.25,
     exclude_loans=False,
-    add_zombie_latin=True,
-    add_medieval_latin=True,
+    add_zombie_latin=False,
+    add_medieval_latin=False,
     use_covarion=True,
     sample_acg_prior_params=False,
     clock_stdev_prior=0.04,
@@ -640,7 +540,7 @@ def fix_tree(old_newick: str, add_zombie_latin: bool, add_medieval_latin: bool) 
 
     tree = parse_node(old_newick_no_attr.strip(" ;"))
     translate_node_names(tree, translate)
-    translate_node_names(tree, RENAME_CHANG)
+    translate_node_names(tree, RENAME_GERARDI)
 
     for name in INCLUDED_LANGUAGES:
         if name in [ZOMBIE_LATIN, MEDIEVAL_LATIN]:
@@ -710,73 +610,73 @@ def drop_attributes(newick):
 
 
 def filter_languages(df):
-    include = df.language.isin(INCLUDED_LANGUAGES)
+    include = df.DOCULECT.isin(INCLUDED_LANGUAGES)
     return df[include]
 
 
 if __name__ == "__main__":
-    DATA_PATH = Path("resources/data-mittellatein-2021-09-30.csv")
-    ielex_df = read_dataset(DATA_PATH)
-    ielex_df = drop_noncoded(ielex_df)
+    DATA_PATH = Path("tupi/tuled_norm.csv")
+    tg_df = read_dataset(DATA_PATH)
+    tg_df = drop_noncoded(tg_df)
 
     path_base, _, path_ext = str(DATA_PATH).rpartition(".")
     subset_path = path_base + "-subset.tsv"
-    ielex_df = filter_languages(ielex_df)
-    ielex_df.to_csv(subset_path, sep="\t", index=False)
+    tg_df = filter_languages(tg_df)
+    tg_df.to_csv(subset_path, sep="\t", index=False)
 
     N_RUNS = 5
 
     RUN_CONFIGURATIONS = {
-        "BT_fixTopo/covarion": {
+        "tupi_BT_fixTopo/covarion": {
             "sampler": Samplers.MCMC,
             "chain_length": 20000000,
             "use_contactrees": False,
             "fixed_topolgy": True,
             "fixed_node_heights": False,
             "exclude_loans": False,
-            "add_zombie_latin": True,
+            "add_zombie_latin": False,
             "use_covarion": True,
         },
-        "BT_fixTopo/covarion_noLoans": {
-            "sampler": Samplers.MCMC,
-            "chain_length": 20000000,
-            "use_contactrees": False,
-            "fixed_topolgy": True,
-            "fixed_node_heights": False,
-            "exclude_loans": True,
-            "add_zombie_latin": True,
-            "use_covarion": True,
-        },
-        "BT_full": {
-            "sampler": Samplers.MCMC,
-            "chain_length": 20000000,
-            "use_contactrees": False,
-            "fixed_topolgy": False,
-            "fixed_node_heights": False,
-            "exclude_loans": False,
-            "add_zombie_latin": True,
-            "use_covarion": True,
-        },
-        "CT_fixTopo/covarion": {
-            "sampler": Samplers.MC3,
-            "chain_length": 20000000,
-            "use_contactrees": True,
-            "fixed_topolgy": True,
-            "fixed_node_heights": False,
-            "exclude_loans": False,
-            "add_zombie_latin": True,
-            "use_covarion": True,
-        },
-        "CT_full": {
-            "sampler": Samplers.MC3,
-            "chain_length": 25000000,
-            "use_contactrees": True,
-            "fixed_topolgy": False,
-            "fixed_node_heights": False,
-            "exclude_loans": False,
-            "add_zombie_latin": True,
-            "use_covarion": True,
-        },
+        #    "BT_fixTopo/covarion_noLoans": {
+        #        "sampler": Samplers.MCMC,
+        #        "chain_length": 20000000,
+        #        "use_contactrees": False,
+        #        "fixed_topolgy": True,
+        #        "fixed_node_heights": False,
+        #        "exclude_loans": True,
+        #        "add_zombie_latin": True,
+        #        "use_covarion": True,
+        #    },
+        #    "BT_full": {
+        #        "sampler": Samplers.MCMC,
+        #        "chain_length": 20000000,
+        #        "use_contactrees": False,
+        #        "fixed_topolgy": False,
+        #        "fixed_node_heights": False,
+        #        "exclude_loans": False,
+        #        "add_zombie_latin": True,
+        #        "use_covarion": True,
+        #    },
+        #    "CT_fixTopo/covarion": {
+        #        "sampler": Samplers.MC3,
+        #        "chain_length": 20000000,
+        #        "use_contactrees": True,
+        #        "fixed_topolgy": True,
+        #        "fixed_node_heights": False,
+        #        "exclude_loans": False,
+        #        "add_zombie_latin": True,
+        #        "use_covarion": True,
+        #    },
+        #    "CT_full": {
+        #        "sampler": Samplers.MC3,
+        #        "chain_length": 25000000,
+        #        "use_contactrees": True,
+        #        "fixed_topolgy": False,
+        #        "fixed_node_heights": False,
+        #        "exclude_loans": False,
+        #        "add_zombie_latin": True,
+        #        "use_covarion": True,
+        #    },
     }
 
     for run_name, kwargs in RUN_CONFIGURATIONS.items():
@@ -786,16 +686,11 @@ if __name__ == "__main__":
         os.makedirs(run_directory, exist_ok=True)
 
         # Compile the BEAST-XML from the data and the run-configuration
-        ie_xml_str = compile_ielex_xml(ielex_df, **kwargs)
+        ie_xml_str = compile_ielex_xml(tg_df, **kwargs)
 
         # Write the XML to ´N_RUNS different files´
         fname_base = run_name.replace("/", "_")
         for i in range(1, N_RUNS + 1):
-            # Create folder structure
-            # if kwargs['use_contactrees']:
-            #     if not os.path.exists(run_directory / f'wordtrees_run{i}/'):
-            #         os.mkdir(run_directory / f'wordtrees_run{i}/')
-
             fname = f"{fname_base}_{i}.xml"
             with open(run_directory / fname, "w") as ie_xml_file:
                 ie_xml_file.write(ie_xml_str)
@@ -810,5 +705,5 @@ if __name__ == "__main__":
                 )
             ie_xml_file.write("\n".join(lines))
 
-    loans = parse_loanwords(ielex_df)
-    loans.to_csv(LOANS_CSV_PATH)
+    # loans = parse_loanwords(tg_df)
+    # loans.to_csv(LOANS_CSV_PATH)
