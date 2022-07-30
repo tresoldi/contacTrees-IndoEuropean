@@ -1,2 +1,4 @@
 pandas
 newick
+python-nexus
+matplotlib
